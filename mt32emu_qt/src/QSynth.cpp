@@ -1385,3 +1385,15 @@ void QSynth::stopRecordingAudio() {
 bool QSynth::isRecordingAudio() const {
 	return audioRecorder != NULL;
 }
+
+Bit32u QSynth::dumpSysexBank(Bit8u *&sysexBank) {
+	Bit32u size = synth->dumpSysexBank(NULL, 0);
+	if (!size) {
+		qDebug() << "Couldn't get SysEx bank size";
+		return 0;
+	}
+	sysexBank = new Bit8u[size];
+	QMutexLocker synthLocker(synthMutex);
+	synth->dumpSysexBank(sysexBank, size);
+	return size;
+}

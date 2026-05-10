@@ -62,6 +62,7 @@ private slots:
 	void on_pinVolumeCheckBox_toggled(bool newChecked);
 	void on_stereoOutputAmpSlider_valueChanged(int newValue);
 	void on_stereoOutputAmpSpinBox_editingFinished();
+	void on_saveStateButton_clicked();
 	void on_detailsButton_clicked();
 	void handleSynthRouteState(SynthRouteState state);
 	void handleSynthRoutePinned();

@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>630</width>
+    <width>655</width>
     <height>511</height>
    </rect>
   </property>
@@ -458,6 +458,19 @@ terminates and no longer consumes resources.</string>
               <widget class="QPushButton" name="synthPropertiesButton">
                <property name="text">
                 <string>Properties</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QPushButton" name="saveStateButton">
+               <property name="toolTip">
+                <string>Saves the internal synth state into a SysEx bank. This includes
+the system area, timbre and patch memory as well as the current
+state of all parts settable via SysExes. The currently playing notes
+and values of certain controllers are not included.</string>
+               </property>
+               <property name="text">
+                <string>Save State</string>
                </property>
               </widget>
              </item>

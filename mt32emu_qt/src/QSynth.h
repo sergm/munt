@@ -221,6 +221,8 @@ public:
 	void stopRecordingAudio();
 	bool isRecordingAudio() const;
 
+	MT32Emu::Bit32u dumpSysexBank(MT32Emu::Bit8u *&sysexBank);
+
 signals:
 	void stateChanged(SynthState);
 	void audioBlockRendered();

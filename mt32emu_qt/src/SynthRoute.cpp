@@ -553,3 +553,7 @@ void SynthRoute::saveRecordedMidi(const QString &fileName, MasterClockNanos midi
 bool SynthRoute::isRecordingMidi() const {
 	return midiRecorder.isRecording();
 }
+
+Bit32u SynthRoute::dumpSysexBank(Bit8u *&sysexBank) {
+	return qSynth.dumpSysexBank(sysexBank);
+}

@@ -24,6 +24,9 @@ HEAD:
 	  via a SysEx message. Additionally, a new "Stereo Output Amp" control located below the Master
 	  Volume compliments it to alter both easily. (#135)
 	* Added more hints to make the UI better self-documenting. (#105)
+	* Added Save State button to the Synth pane. It enables storing the current internal synth
+	  state into a SysEx bank file that can be loaded later as usual (e.g. via the MIDI player).
+	  Related to (#144).
 
 2022-08-03:
 

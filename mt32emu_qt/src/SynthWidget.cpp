@@ -15,6 +15,7 @@
  */
 
 #include <QFileDialog>
+#include <QMessageBox>
 
 #include "audiodrv/AudioDriver.h"
 #include "SynthWidget.h"
@@ -192,6 +193,33 @@ void SynthWidget::on_pinCheckBox_stateChanged(int state)
 		master->setPinned(synthRoute);
 	} else if (state == Qt::Unchecked && master->isPinned(synthRoute)) {
 		master->setPinned(NULL);
+	}
+}
+
+void SynthWidget::on_saveStateButton_clicked() {
+	static QString currentDir = NULL;
+	QFileDialog::Options qFileDialogOptions = QFileDialog::Options(Master::getInstance()->getSettings()->value("Master/qFileDialogOptions", 0).toInt());
+	QString fileName = QFileDialog::getSaveFileName(this, NULL, currentDir, "SysEx bank files (*.syx)", NULL, qFileDialogOptions);
+	if (!fileName.isEmpty()) {
+		currentDir = QDir(fileName).absolutePath();
+		MT32Emu::Bit8u *sysexBank = NULL;
+		MT32Emu::Bit32u sysexBankSize = synthRoute->dumpSysexBank(sysexBank);
+		if (sysexBankSize == 0) {
+			QMessageBox::warning(this, "Error", "Failed to dump SysEx bank from the synth");
+			return;
+		}
+		QFile sysexFile(fileName);
+		qint64 writtenBytes = 0;
+		if (sysexFile.open(QIODevice::WriteOnly)) {
+			writtenBytes = sysexFile.write((char *)sysexBank, sysexBankSize);
+		}
+		if (writtenBytes == sysexBankSize) {
+			qDebug() << "Dumped synth state of" << sysexBankSize << "bytes to SysEx bank" << fileName;
+		} else {
+			qDebug() << "Error writing SysEx bank to" << fileName;
+			QMessageBox::warning(this, "Error", "Failed to write SysEx bank to the specified file");
+		}
+		delete[] sysexBank;
 	}
 }
 
