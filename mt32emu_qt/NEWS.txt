@@ -1,4 +1,6 @@
-HEAD:
+2026-05-16:
+
+	1.12.0 released.
 
 	* Updated mt32emu library to version 2.8.0.
 	* Fixed UI that may show obsolete state of a stopped synth.

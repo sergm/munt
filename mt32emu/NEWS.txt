@@ -1,4 +1,6 @@
-HEAD:
+2026-05-16:
+
+	2.8.0 released.
 
 	* Added basic unit tests. Details on the build requirements and configuration options can be
 	  found in README.md file. (#108)
