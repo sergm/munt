@@ -1,3 +1,10 @@
+2026-05-23:
+
+	2.8.1 released.
+
+	* Fixed function Synth::readMemory that didn't retrieve data correctly from the Timbre
+	  Memory bank. (#145)
+
 2026-05-16:
 
 	2.8.0 released.

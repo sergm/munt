@@ -630,6 +630,7 @@ public:
 	MT32EMU_EXPORT_V(2.7) bool getSoundName(char *soundName, Bit8u timbreGroup, Bit8u timbreNumber) const;
 
 	// Stores internal state of emulated synth into an array provided (as it would be acquired from hardware).
+	// Note, addr parameter is expressed in the linear space and *not* the SysEx address space.
 	MT32EMU_EXPORT void readMemory(Bit32u addr, Bit32u len, Bit8u *data);
 
 	// Retrieves the current state of the emulated MT-32 display facilities.

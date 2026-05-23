@@ -1707,6 +1707,7 @@ void Synth::readMemoryRegion(const MemoryRegion *region, Bit32u addr, Bit32u len
 	unsigned int m;
 
 	if (region->isReadable()) {
+		if (MR_Timbres == region->type) first += 128;
 		region->read(first, off, data, len);
 	} else {
 		// FIXME: We might want to do these properly in future

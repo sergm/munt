@@ -108,6 +108,10 @@ class PatchesMemoryRegion : public MemoryRegion {
 public:
 	PatchesMemoryRegion(Bit8u *useRealMemory, Bit8u *useMaxTable) : MemoryRegion(useRealMemory, useMaxTable, MR_Patches, MT32EMU_MEMADDR(0x050000), sizeof(PatchParam), 128) {}
 };
+// Note: this region has quite a special memory layout and doesn't map directly to SysEx-addressable memory.
+// Aside from the actual Timbre Memory bank, we also cache the standard timbres extracted from the Control ROM herein.
+// Therefore, one must always apply offset +128 when accessing the entries of the Timbre Memory bank.
+// This also means that e.g. getClampedLen doesn't work as expected, so better to clean up this mess.
 class TimbresMemoryRegion : public MemoryRegion {
 public:
 	TimbresMemoryRegion(Bit8u *useRealMemory, Bit8u *useMaxTable) : MemoryRegion(useRealMemory, useMaxTable, MR_Timbres, MT32EMU_MEMADDR(0x080000), sizeof(MemParams::PaddedTimbre), 64 + 64 + 64 + 64) {}
