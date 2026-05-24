@@ -1,0 +1,116 @@
+name: Build release packages
+
+on:
+  workflow_dispatch
+
+jobs:
+  build-ubuntu-packages:
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        shell: bash
+        working-directory: ${{ github.workspace }}
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Install dependencies for libmt32emu
+      run: |
+        sudo apt-get update
+        sudo apt-get install doctest-dev
+
+    - name: Configure libmt32emu
+      run: >
+        cmake -S mt32emu -B build
+        -G Ninja
+        -D CMAKE_BUILD_TYPE=Release
+        -D libmt32emu_PACKAGE_TYPE=Runtime
+        -D libmt32emu_WITH_VERSION_TAGGING=ON
+        -D libmt32emu_WITH_SYMBOL_VERSIONING=ON
+
+    - name: Build libmt32emu
+      run: cmake --build build
+
+    - name: Test libmt32emu
+      working-directory: ${{ github.workspace }}/build
+      run: ctest -V
+
+    - name: Package libmt32emu
+      working-directory: ${{ github.workspace }}/build
+      run: cpack -G DEB
+
+    - uses: actions/upload-artifact@v7
+      name: Upload libmt32emu
+      with:
+        path: ${{ github.workspace }}/build/libmt32emu-*.deb
+        archive: false
+
+    - name: Configure libmt32emu-dev
+      run: cmake -D libmt32emu_PACKAGE_TYPE=Devel build
+
+    - name: Package libmt32emu-dev
+      working-directory: ${{ github.workspace }}/build
+      run: cpack -G DEB
+
+    - uses: actions/upload-artifact@v7
+      name: Upload libmt32emu-dev
+      with:
+        path: ${{ github.workspace }}/build/libmt32emu-dev-*.deb
+        archive: false
+
+    - name: Install dependencies for mt32emu-smf2wav
+      working-directory: ${{ github.workspace }}/build
+      run: |
+        sudo dpkg -i libmt32emu-*.deb
+        sudo dpkg -i libmt32emu-dev-*.deb
+        sudo apt-get install libglib2.0-dev
+
+    - name: Clean build directory
+      run: rm -rf build
+
+    - name: Configure mt32emu-smf2wav
+      run: >
+        cmake -S mt32emu_smf2wav -B build
+        -G Ninja
+        -D CMAKE_BUILD_TYPE=Release
+
+    - name: Build mt32emu-smf2wav
+      run: cmake --build build
+
+    - name: Package mt32emu-smf2wav
+      working-directory: ${{ github.workspace }}/build
+      run: cpack -G DEB
+
+    - uses: actions/upload-artifact@v7
+      name: Upload mt32emu-smf2wav
+      with:
+        path: ${{ github.workspace }}/build/mt32emu-smf2wav-*.deb
+        archive: false
+
+    - name: Clean build directory
+      run: rm -rf build
+
+    - name: Install dependencies for mt32emu-qt
+      run: sudo apt-get install libpulse-dev portaudio19-dev libjack-jackd2-dev qt6-multimedia-dev
+
+    - name: Configure mt32emu-qt
+      run: >
+        cmake -S mt32emu_qt -B build
+        -G Ninja
+        -D CMAKE_BUILD_TYPE=Release
+        -D mt32emu-qt_USE_JACK_DYNAMIC_LOADING=ON
+        -D mt32emu-qt_USE_PULSEAUDIO_DYNAMIC_LOADING=OFF
+
+    - name: Build mt32emu-qt
+      run: cmake --build build
+
+    - name: Package mt32emu-qt
+      working-directory: ${{ github.workspace }}/build
+      run: cpack -G DEB
+
+    - uses: actions/upload-artifact@v7
+      name: Upload mt32emu-qt
+      with:
+        path: ${{ github.workspace }}/build/mt32emu-qt-*.deb
+        archive: false
