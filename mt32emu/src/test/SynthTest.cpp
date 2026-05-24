@@ -572,20 +572,22 @@ TEST_CASE("Synth should play SysEx with a custom Timbre bank and read it from me
 		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x64, 0x64,
 		0x64, 0x64
 	};
+	static const Bit8u *timbreSysexData = timbreSysex + 3;
+	static const Bit32u timbreSysexDataLength = sizeof timbreSysex - 3;
 
 	Synth synth;
 	ROMSet romSet;
 	romSet.initMT32New();
 	openSynth(synth, romSet);
 
-	Bit8u timbreData[sizeof timbreSysex - 3];
+	Bit8u timbreData[timbreSysexDataLength];
 
 	synth.readMemory(0x023800, sizeof timbreData, timbreData);
 	checkSilence(timbreData, sizeof timbreData);
 
 	synth.writeSysex(16, timbreSysex, sizeof timbreSysex);
 	synth.readMemory(0x023800, sizeof timbreData, timbreData);
-	MT32EMU_CHECK_MEMORY_EQUAL(timbreData, timbreSysex + 3, sizeof timbreData);
+	MT32EMU_CHECK_MEMORY_EQUAL(timbreData, timbreSysexData, timbreSysexDataLength);
 }
 
 } // namespace Test

@@ -36,9 +36,7 @@ String toString(E e) { \
 do { \
 	bool subStringFound = strstr(haystack, needle) != NULL; \
 	const char *descr = subStringFound ? " CONTAINS " : " DOES NOT CONTAIN "; \
-	INFO(#haystack << descr << #needle "!"); \
-	CAPTURE(haystack); \
-	CAPTURE(needle); \
+	INFO("\n\t" #haystack " := '" << haystack << "'" << descr << #needle " := '" << needle << "'!"); \
 	CHECK(subStringFound); \
 } while(false)
 
@@ -48,9 +46,7 @@ do { \
 		CHECK(data1 == data2); \
 		break; \
 	} \
-	CAPTURE(data1); \
-	CAPTURE(data2); \
-	CAPTURE(size); \
+	INFO("\n\t" #data1 " := " << data1 << "\n\t" #data2 " := " << data2 << "\n\t" #size " := " << size); \
 	CHECK(memcmp(data1, data2, size) == 0); \
 } while(false)
 
