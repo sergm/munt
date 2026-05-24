@@ -582,12 +582,41 @@ TEST_CASE("Synth should play SysEx with a custom Timbre bank and read it from me
 
 	Bit8u timbreData[timbreSysexDataLength];
 
-	synth.readMemory(0x023800, sizeof timbreData, timbreData);
-	checkSilence(timbreData, sizeof timbreData);
+	synth.readMemory(0x023800, timbreSysexDataLength, timbreData);
+	checkSilence(timbreData, timbreSysexDataLength);
 
 	synth.writeSysex(16, timbreSysex, sizeof timbreSysex);
-	synth.readMemory(0x023800, sizeof timbreData, timbreData);
+	synth.readMemory(0x023800, timbreSysexDataLength, timbreData);
 	MT32EMU_CHECK_MEMORY_EQUAL(timbreData, timbreSysexData, timbreSysexDataLength);
+}
+
+TEST_CASE("Synth should ignore SysEx writes to addresses right above Timbre Memory") {
+	static const Bit8u timbreSysex[] = {
+		0x09, 0x00, 0x00,
+		'T', 'e', 's', 't', '-', 's', 'i', 'n', 'e', '.'
+	};
+	static const Bit32u timbreSysexDataLength = sizeof timbreSysex - 3;
+
+	Synth synth;
+	ROMSet romSet;
+	romSet.initMT32New();
+	openSynth(synth, romSet);
+
+	Bit8u timbreData[timbreSysexDataLength];
+	memset(timbreData, 0, timbreSysexDataLength);
+
+	synth.readMemory(0x024000, timbreSysexDataLength, timbreData);
+	checkSilence(timbreData, timbreSysexDataLength);
+
+	const ReportedEvent expected[] = {
+		ReportedEvent::midiMessage(),
+		ReportedEvent::debugMessage("Sysex write to unrecognised address")
+	};
+	TestReportHandler<ReportHandler3> rh(expected);
+	synth.setReportHandler3(&rh);
+	synth.writeSysex(16, timbreSysex, sizeof timbreSysex);
+	synth.readMemory(0x024000, timbreSysexDataLength, timbreData);
+	checkSilence(timbreData, timbreSysexDataLength);
 }
 
 } // namespace Test

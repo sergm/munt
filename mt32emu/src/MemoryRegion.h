@@ -1,5 +1,5 @@
 /* Copyright (C) 2003, 2004, 2005, 2006, 2008, 2009 Dean Beeler, Jerome Fisher
- * Copyright (C) 2011-2025 Dean Beeler, Jerome Fisher, Sergey V. Mikayev
+ * Copyright (C) 2011-2026 Dean Beeler, Jerome Fisher, Sergey V. Mikayev
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU Lesser General Public License as published by
@@ -108,13 +108,9 @@ class PatchesMemoryRegion : public MemoryRegion {
 public:
 	PatchesMemoryRegion(Bit8u *useRealMemory, Bit8u *useMaxTable) : MemoryRegion(useRealMemory, useMaxTable, MR_Patches, MT32EMU_MEMADDR(0x050000), sizeof(PatchParam), 128) {}
 };
-// Note: this region has quite a special memory layout and doesn't map directly to SysEx-addressable memory.
-// Aside from the actual Timbre Memory bank, we also cache the standard timbres extracted from the Control ROM herein.
-// Therefore, one must always apply offset +128 when accessing the entries of the Timbre Memory bank.
-// This also means that e.g. getClampedLen doesn't work as expected, so better to clean up this mess.
 class TimbresMemoryRegion : public MemoryRegion {
 public:
-	TimbresMemoryRegion(Bit8u *useRealMemory, Bit8u *useMaxTable) : MemoryRegion(useRealMemory, useMaxTable, MR_Timbres, MT32EMU_MEMADDR(0x080000), sizeof(MemParams::PaddedTimbre), 64 + 64 + 64 + 64) {}
+	TimbresMemoryRegion(Bit8u *useRealMemory, Bit8u *useMaxTable) : MemoryRegion(useRealMemory, useMaxTable, MR_Timbres, MT32EMU_MEMADDR(0x080000), sizeof(MemParams::PaddedTimbre), 64) {}
 };
 class SystemMemoryRegion : public MemoryRegion {
 public:

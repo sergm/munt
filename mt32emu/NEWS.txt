@@ -1,3 +1,10 @@
+2026-05-24:
+
+	2.8.2 released.
+
+	* Prevented Rhythm Timbre bank from overwriting by unofficial SysEx messages addressing
+	  memory range 0x090000-0x097FFF. (#146)
+
 2026-05-23:
 
 	2.8.1 released.

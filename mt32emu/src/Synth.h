@@ -239,7 +239,7 @@ private:
 
 	bool initPCMList(Bit16u mapAddress, Bit16u count);
 	bool initTimbres(Bit16u mapAddress, Bit16u offset, Bit16u timbreCount, Bit16u startTimbre, bool compressed);
-	bool initCompressedTimbre(Bit16u drumNum, const Bit8u *mem, Bit32u memLen);
+	bool initCompressedTimbre(TimbresMemoryRegion &tempRegion, Bit16u absTimbreNum, const Bit8u *src, Bit32u srcLen);
 	void initReverbModels(bool mt32CompatibleMode);
 	void initSoundGroups(char newSoundGroupNames[][9]);
 
