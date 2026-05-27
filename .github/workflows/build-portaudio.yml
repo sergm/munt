@@ -1,0 +1,75 @@
+name: Build PortAudio
+
+on:
+  workflow_dispatch
+
+jobs:
+  build-portaudio-windows:
+    runs-on: windows-latest
+
+    defaults:
+      run:
+        shell: cmd
+        working-directory: ${{ github.workspace }}
+
+    steps:
+    - name: Get sources
+      run: git clone --depth=1 --revision=refs/tags/v19.7.0 https://github.com/PortAudio/portaudio
+
+    - name: Assemble
+      run: >
+        "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvars64.bat" &&
+        cmake -S portaudio -B build -G Ninja
+        -D CMAKE_BUILD_TYPE=Release
+        -D CMAKE_INSTALL_PREFIX=stage
+        -D CMAKE_POLICY_VERSION_MINIMUM=3.5
+        -D PA_BUILD_SHARED=OFF &&
+        cmake --build build &&
+        cmake --install build --prefix stage
+
+    - name: Pack
+      run: tar czf portaudio-win64.tgz stage
+
+    - uses: actions/upload-artifact@v7
+      name: Upload
+      with:
+        path: ${{ github.workspace }}/portaudio-win64.tgz
+        name: portaudio-win64
+        archive: false
+
+  build-portaudio-macos:
+    runs-on: macos-latest
+
+    defaults:
+      run:
+        shell: bash
+        working-directory: ${{ github.workspace }}
+
+    steps:
+    - name: Get sources
+      run: git clone --depth=1 --revision=refs/tags/v19.7.0 https://github.com/PortAudio/portaudio
+
+    - name: Configure
+      run: >
+        cmake -S portaudio -B build -G Ninja
+        -D CMAKE_BUILD_TYPE=Release
+        -D CMAKE_INSTALL_PREFIX=stage
+        -D CMAKE_POLICY_VERSION_MINIMUM=3.5
+        -D CMAKE_OSX_DEPLOYMENT_TARGET:STRING=13.0
+        -D PA_BUILD_SHARED=OFF
+
+    - name: Build
+      run: cmake --build build
+
+    - name: Stage
+      run: cmake --install build --prefix stage
+
+    - name: Pack
+      run: tar czf portaudio-macos.tgz stage
+
+    - uses: actions/upload-artifact@v7
+      name: Upload
+      with:
+        path: ${{ github.workspace }}/portaudio-macos.tgz
+        name: portaudio-macos
+        archive: false

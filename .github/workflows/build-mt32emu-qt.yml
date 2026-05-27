@@ -1,0 +1,144 @@
+name: Build fat mt32emu-qt binary
+
+on:
+  workflow_dispatch
+
+jobs:
+  build-mt32emu-qt-windows:
+    runs-on: windows-latest
+
+    defaults:
+      run:
+        shell: cmd
+        working-directory: ${{ github.workspace }}
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Checkout portaudio
+      uses: actions/download-artifact@v8
+      with:
+        path: ${{ github.workspace }}
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        repository: sergm/munt
+        run-id: 26477630535
+        artifact-ids: 7227140577
+
+    - name: Checkout Qt
+      uses: actions/download-artifact@v8
+      with:
+        path: ${{ github.workspace }}
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        repository: sergm/munt
+        run-id: 26478191762
+        artifact-ids: 7227766408
+
+    - name: Unpack dependencies
+      run: |
+        tar xf qt_6_11_1_win64.tgz
+        mkdir portaudio
+        tar xf portaudio-win64.tgz -C portaudio
+
+    - name: Get Jack
+      run: |
+        git clone --depth=1 --revision=refs/tags/v1.9.22 https://github.com/jackaudio/jack2.git
+        type NUL > jack2\libjack64.lib
+
+    - name: Assemble
+      run: >
+        "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvars64.bat" &&
+        cmake -S . -B build -G Ninja
+        -D BUILD_SNAPSHOTS=ON
+        -D BUILD_TESTING=OFF
+        -D CMAKE_BUILD_TYPE=Release
+        -D CMAKE_MSVC_RUNTIME_LIBRARY:STRING="MultiThreaded$<$<CONFIG:Debug>:Debug>"
+        -D CMAKE_PREFIX_PATH=${{ github.workspace }}/stage
+        -D JACK_INCLUDE_DIR:PATH=${{ github.workspace }}/jack2/common
+        -D JACK_LIBRARY:FILEPATH=${{ github.workspace }}/jack2/libjack64.lib
+        -D PORTAUDIO_INCLUDE_DIR=${{ github.workspace }}/portaudio/stage/include
+        -D PORTAUDIO_LIBRARY=${{ github.workspace }}/portaudio/stage/lib/portaudio_static_x64.lib
+        -D libmt32emu_PACKAGE_TYPE=Runtime
+        -D mt32emu-qt_USE_JACK_DYNAMIC_LOADING:BOOL=ON
+        -D munt_WITH_MT32EMU_SMF2WAV:BOOL=OFF
+        -D munt_WITH_MT32EMU_WIN32DRV:BOOL=OFF &&
+        cmake --build build &&
+        cmake --install build --prefix snapshot --component Runtime
+
+    - name: Package
+      run: |
+        cd snapshot
+        move bin\mt32emu-qt.exe .
+        move share\doc .
+        rmdir /s/q bin share
+
+    - uses: actions/upload-artifact@v7
+      name: Upload
+      with:
+        path: ${{ github.workspace }}/snapshot
+        name: mt32emu_qt_win11_x64
+        archive: true
+
+  build-mt32emu-qt-macos:
+    runs-on: macos-latest
+
+    defaults:
+      run:
+        shell: bash
+        working-directory: ${{ github.workspace }}
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Checkout portaudio
+      uses: actions/download-artifact@v8
+      with:
+        path: ${{ github.workspace }}
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        repository: sergm/munt
+        run-id: 26477630535
+        artifact-ids: 7227132734
+
+    - name: Checkout Qt
+      uses: actions/download-artifact@v8
+      with:
+        path: ${{ github.workspace }}
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        repository: sergm/munt
+        run-id: 26478191762
+        artifact-ids: 7227582997
+
+    - name: Unpack dependencies
+      run: |
+        tar xf qt_6_11_1_macos.tgz
+        mkdir portaudio
+        tar xf portaudio-macos.tgz -C portaudio
+
+    - name: Configure
+      run: >
+        cmake -S . -B build -G Ninja
+        -D BUILD_SNAPSHOTS=ON
+        -D BUILD_TESTING=OFF
+        -D CMAKE_BUILD_TYPE=Release
+        -D CMAKE_PREFIX_PATH=${{ github.workspace }}/stage
+        -D PORTAUDIO_INCLUDE_DIR=${{ github.workspace }}/portaudio/stage/include
+        -D PORTAUDIO_LIBRARY=${{ github.workspace }}/portaudio/stage/lib/libportaudio.a
+        -D libmt32emu_PACKAGE_TYPE=Runtime
+        -D munt_WITH_MT32EMU_SMF2WAV:BOOL=OFF
+
+    - name: Build
+      run: cmake --build build
+
+    - name: Package
+      run: |
+        cmake --install build --prefix snapshot --component Runtime
+        cd snapshot
+        mv bin/mt32emu-qt.app .
+        mv share/doc .
+        rm -rf bin share
+        tar czf ../mt32emu_qt_macos_arm64.tgz *
+
+    - uses: actions/upload-artifact@v7
+      name: Upload
+      with:
+        path: ${{ github.workspace }}/mt32emu_qt_macos_arm64.tgz
+        archive: false

@@ -1,0 +1,89 @@
+name: Build Qt
+
+on:
+  workflow_dispatch
+
+jobs:
+  build-qt-windows:
+    runs-on: windows-latest
+
+    defaults:
+      run:
+        shell: cmd
+        working-directory: ${{ github.workspace }}
+
+    steps:
+    - name: Get super repo
+      run: git clone --depth=1 --revision=refs/tags/v6.11.1 https://code.qt.io/qt/qt5.git
+
+    - name: Get submodules
+      working-directory: ${{ github.workspace }}/qt5
+      run: git submodule update --init --depth=1 qtbase
+
+    - name: Assemble
+      run: >
+        "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvars64.bat" &&
+        cmake -S qt5 -B build -G Ninja
+        -D BUILD_SHARED_LIBS:BOOL=OFF
+        -D CMAKE_BUILD_TYPE=Release
+        -D CMAKE_INSTALL_PREFIX=stage
+        -D FEATURE_static_runtime:BOOL=ON
+        -D FEATURE_printsupport:BOOL=OFF
+        -D FEATURE_testlib:BOOL=OFF
+        -D FEATURE_sql:BOOL=OFF
+        -D FEATURE_xml:BOOL=OFF &&
+        cmake --build build &&
+        cmake --install build
+
+    - name: Pack
+      run: tar czf qt_6_11_1_win64.tgz stage
+
+    - uses: actions/upload-artifact@v7
+      name: Upload
+      with:
+        path: ${{ github.workspace }}/qt_6_11_1_win64.tgz
+        name: qt_6_11_1_win64
+        archive: false
+
+  build-qt-macos:
+    runs-on: macos-latest
+
+    defaults:
+      run:
+        shell: bash
+        working-directory: ${{ github.workspace }}
+
+    steps:
+    - name: Get super repo
+      run: git clone --depth=1 --revision=refs/tags/v6.11.1 https://code.qt.io/qt/qt5.git
+
+    - name: Get submodules
+      working-directory: ${{ github.workspace }}/qt5
+      run: git submodule update --init --depth=1 qtbase qtshadertools qtmultimedia
+
+    - name: Configure
+      run: >
+        cmake -S qt5 -B build -G Ninja
+        -D BUILD_SHARED_LIBS:BOOL=OFF
+        -D CMAKE_BUILD_TYPE=Release
+        -D CMAKE_INSTALL_PREFIX=stage
+        -D FEATURE_printsupport:BOOL=OFF
+        -D FEATURE_testlib:BOOL=OFF
+        -D FEATURE_sql:BOOL=OFF
+        -D FEATURE_xml:BOOL=OFF
+
+    - name: Build
+      run: cmake --build build
+
+    - name: Stage
+      run: cmake --install build
+
+    - name: Pack
+      run: tar czf qt_6_11_1_macos.tgz stage
+
+    - uses: actions/upload-artifact@v7
+      name: Upload
+      with:
+        path: ${{ github.workspace }}/qt_6_11_1_macos.tgz
+        name: qt_6_11_1_macos
+        archive: false
