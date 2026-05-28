@@ -119,6 +119,7 @@ jobs:
         -D BUILD_SNAPSHOTS=ON
         -D BUILD_TESTING=OFF
         -D CMAKE_BUILD_TYPE=Release
+        -D CMAKE_OSX_DEPLOYMENT_TARGET:STRING=13.0
         -D CMAKE_PREFIX_PATH=${{ github.workspace }}/stage
         -D PORTAUDIO_INCLUDE_DIR=${{ github.workspace }}/portaudio/stage/include
         -D PORTAUDIO_LIBRARY=${{ github.workspace }}/portaudio/stage/lib/libportaudio.a
@@ -130,11 +131,12 @@ jobs:
 
     - name: Package
       run: |
-        cmake --install build --prefix snapshot --component Runtime
+        cmake --install build --prefix snapshot --component Runtime --strip
         cd snapshot
         mv bin/mt32emu-qt.app .
         mv share/doc .
         rm -rf bin share
+        strip mt32emu-qt.app/Contents/MacOS/mt32emu-qt
         tar czf ../mt32emu_qt_macos_arm64.tgz *
 
     - uses: actions/upload-artifact@v7
