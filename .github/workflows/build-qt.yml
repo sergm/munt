@@ -42,7 +42,6 @@ jobs:
       name: Upload
       with:
         path: ${{ github.workspace }}/qt_6_11_1_win64.tgz
-        name: qt_6_11_1_win64
         archive: false
 
   build-qt-macos:
@@ -85,5 +84,41 @@ jobs:
       name: Upload
       with:
         path: ${{ github.workspace }}/qt_6_11_1_macos.tgz
-        name: qt_6_11_1_macos
+        archive: false
+
+  build-qt-linux:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Assemble
+      run: |
+        cat <<'EOF' >> build.sh
+        #!/bin/bash
+        set -e
+        dnf update -y
+        dnf install -y gcc-toolset-10-gcc-c++ cmake ninja-build \
+          gtk3-devel libX11-devel xcb-util-devel xcb-util-image-devel xcb-util-keysyms-devel xcb-util-renderutil-devel \
+          xcb-util-wm-devel libxkbcommon-devel libxkbcommon-x11-devel
+        source /opt/rh/gcc-toolset-10/enable
+        mkdir /home/munt/qt
+        cd /home/munt/qt
+        git clone --depth=1 --branch=v6.11.1 https://code.qt.io/qt/qt5.git
+        cd qt5
+        git submodule update --init --depth=1 qtbase
+        cd ..
+        cmake -S qt5 -B build -G Ninja -D BUILD_SHARED_LIBS:BOOL=OFF -D CMAKE_BUILD_TYPE=Release -D CMAKE_INSTALL_PREFIX=stage \
+          -D FEATURE_printsupport:BOOL=OFF -D FEATURE_testlib:BOOL=OFF -D FEATURE_sql:BOOL=OFF -D FEATURE_xml:BOOL=OFF
+        cmake --build build
+        cmake --install build
+        tar czf qt_6_11_1_linux_x64.tgz stage
+        EOF
+        chmod a+x build.sh
+        podman run --mount type=bind,source=.,destination=/home/munt \
+          --rm \
+          ghcr.io/almalinux/8-toolbox /home/munt/build.sh
+
+    - uses: actions/upload-artifact@v7
+      name: Upload
+      with:
+        path: ${{ github.workspace }}/qt/qt_6_11_1_linux_x64.tgz
         archive: false
